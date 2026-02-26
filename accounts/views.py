@@ -402,7 +402,7 @@ def get_tasks(request):
         {
             "id": t.id,
             "title": t.title,
-            "payout": str(t.payout),
+            "payout": str(t.worker_reward),
             "available": t.available,
             "icon": t.icon,
             "instructions": t.instructions,
@@ -468,7 +468,7 @@ def get_single_task(request, task_id):
     return JsonResponse({
         "id": task.id,
         "title": task.title,
-        "payout": task.payout,
+        "payout": str(task.worker_reward),
         "available": task.available,
         "platform": task.platforms,
         "task_type": task.get_task_type_display(),
@@ -493,8 +493,10 @@ def create_task(request):
     except Exception:
         return JsonResponse({"error": "Invalid data"}, status=400)
 
-    payout_per_action = Decimal("5.00")
-    total_cost = payout_per_action * followers
+    cost_per_action = Decimal("0.15")   # what advertiser pays
+    worker_reward = Decimal("0.10")     # what worker earns
+
+    total_cost = cost_per_action * followers
 
     user = request.user
 
@@ -510,13 +512,14 @@ def create_task(request):
     Task.objects.create(
         creator=user,  # make sure this field exists in model
         title=f"{platform} Followers Task",
-        payout=payout_per_action,
-        available=followers,
-        platforms=platform,
-        link=link,
-        short_desc="Follow the page and earn.",
-        total_budget=total_cost
-    )
+    cost_per_action=cost_per_action,
+    worker_reward=worker_reward,
+    available=followers,
+    platforms=platform,
+    link=link,
+    short_desc="Follow the page and earn.",
+    total_budget=total_cost
+)
 
     return JsonResponse({
         "message": "Task created successfully",
@@ -557,9 +560,9 @@ def complete_task(request, task_id):
     TaskCompletion.objects.create(user=request.user, task=task)
 
     # ✅ Pay user
-    request.user.balance += task.payout
+    request.user.balance += task.worker_reward
+    request.user.earnings += task.worker_reward
     request.user.tasks_completed += 1
-    request.user.earnings += task.payout
     request.user.save(update_fields=["balance", "tasks_completed", "earnings"])
 
     return JsonResponse({

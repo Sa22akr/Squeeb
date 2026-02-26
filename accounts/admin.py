@@ -4,8 +4,15 @@ from .models import Task, User
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("title", "payout", "available", "platforms", "creator", "created_at")
-
+    list_display = (
+        "title",
+        "cost_per_action",
+        "worker_reward",
+        "available",
+        "platforms",
+        "creator",
+        "created_at",
+    )
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

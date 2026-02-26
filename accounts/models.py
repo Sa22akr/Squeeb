@@ -14,7 +14,8 @@ class Task(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     title = models.CharField(max_length=255)
-    payout = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cost_per_action = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    worker_reward = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     available = models.IntegerField(default=0)
 
     icon = models.CharField(max_length=255, default="task.png")
@@ -44,6 +45,10 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+    
+    @property
+    def platform_profit_per_action(self):
+        return self.cost_per_action - self.worker_reward
 
 
 class TaskCompletion(models.Model):
