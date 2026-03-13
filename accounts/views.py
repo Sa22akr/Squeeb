@@ -45,7 +45,7 @@ def marketplace_page(request):
             is_sold=False
         ).order_by("-id")
 
-    return render(request, "marketplace.html", {
+    return render(request, "accounts/marketplace.html", {
         "products": products,
         "active_category": category
     })
@@ -350,7 +350,7 @@ def sell_product(request):
 
         return redirect("marketplace")
 
-    return render(request, "sell.html")
+    return render(request, "accounts/sell.html")
 
 
 
@@ -598,9 +598,9 @@ def pay_membership(request):
 
 @login_required
 def more_page(request):
-    return render(request, "more.html")
+    return render(request, "accounts/more.html")
 
 
 def earnings(request):
-    return render(request, "earnings.html")
+    return render(request, "accounts/earnings.html")
 
