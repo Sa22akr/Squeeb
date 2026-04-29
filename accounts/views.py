@@ -493,15 +493,15 @@ def create_task(request):
 
     user = request.user
 
-    # ✅ CHECK BALANCE
+    #  CHECK BALANCE
     if user.balance < total_cost:
         return JsonResponse({"error": "Insufficient balance"}, status=400)
 
-    # ✅ DEDUCT BALANCE
+    #  DEDUCT BALANCE
     user.balance -= total_cost
     user.save(update_fields=["balance"])
 
-    # ✅ CREATE TASK
+    #  CREATE TASK
     Task.objects.create(
     creator=user,
     title=f"{platform} {task_type.capitalize()} Task",
@@ -524,7 +524,7 @@ def create_task(request):
 @login_required
 def complete_task(request, task_id):
 
-    # 🔒 Block non-members
+    # Block non-members
     if not request.user.is_member:
         return JsonResponse({
             "error": "Membership required."
@@ -535,25 +535,25 @@ def complete_task(request, task_id):
 
     task = get_object_or_404(Task, id=task_id)
 
-    # 🚫 Creator cannot complete own task
+    #  Creator cannot complete own task
     if task.creator == request.user:
         return JsonResponse({"error": "You cannot complete your own task"}, status=400)
 
-    # 🚫 Already completed
+    #  Already completed
     if TaskCompletion.objects.filter(user=request.user, task=task).exists():
         return JsonResponse({"error": "You already completed this task"}, status=400)
 
     if task.available <= 0:
         return JsonResponse({"error": "No slots remaining"}, status=400)
 
-    # ✅ Reduce availability
+    #  Reduce availability
     task.available -= 1
     task.save(update_fields=["available"])
 
-    # ✅ Record completion
+    #  Record completion
     TaskCompletion.objects.create(user=request.user, task=task)
 
-    # ✅ Pay user
+    #  Pay user
     request.user.balance += task.worker_reward
     request.user.earnings += task.worker_reward
     request.user.tasks_completed += 1
